@@ -1,16 +1,29 @@
 package workernode;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class WorkerNode {
     public static void main(String[] args) {
-        final String SERVER_IP = "localhost";
-        final int SERVER_PORT = 42069;
+        
+        Scanner hostCap = new Scanner(System.in);
+        System.out.println("Enter your host number (e.g. 'localhost'): ");
+        String activeHost = hostCap.nextLine();
+        Scanner portCap = new Scanner(System.in);
+        System.out.println("Enter port number: ");
+        int activePort = portCap.nextInt();
+        Config config = new Config(activePort, activeHost);
         
         try {
-            Socket socket = new Socket(SERVER_IP, SERVER_PORT);
-            System.out.println("Connected to load balancer.");
+            //establishes connection with LB
+           Socket socket = new Socket(config.getHost(), config.getPort());
+           System.out.println("Connected to load balancer.");
+            while (true) {
+
+            }
             // still needs doing....
         } catch (IOException e) {
             System.out.println("Connection FAILED! Ensure load balancer is started!");
