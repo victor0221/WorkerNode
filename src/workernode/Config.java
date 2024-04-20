@@ -13,15 +13,19 @@ public class Config implements IConfig {
     
     private int _port;
     private String _host;
+    private String _nodeName;
+    private int _jobLimit;
     
     //my constructors,
     public Config(){
         
     };
     
-    public Config(int port, String host){
+    public Config(int port, String host,String nodeName, int jobLimit   ){
         _port = port;
         _host = host;
+        _nodeName = nodeName;
+        _jobLimit = jobLimit;
     };
     
 
@@ -43,5 +47,21 @@ public class Config implements IConfig {
     public void setHost(String host) {
         _host = host;
     };
+    
+    public String getNodeName() {
+        return _nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        _nodeName = nodeName;
+    }
+    
+    public int getJobLimit() {
+        return _jobLimit;
+    }
+
+    public void setJobLimit(int jobLimit) {
+        _jobLimit = jobLimit;
+    }
     
 }
