@@ -14,4 +14,8 @@ public interface IConfig {
     public void setPort(int port);
     public String getHost();
     public void setHost(String host);
+    public String getNodeName();
+    public void setNodeName(String nodeName);
+    public int getJobLimit();
+    public void setJobLimit(int jobLimit);
 }
