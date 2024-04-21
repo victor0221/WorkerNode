@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import jobsender.Job;
 
 public class WorkerNode {
     private static int _jobCounter = 0;
@@ -57,10 +58,10 @@ public class WorkerNode {
                 ObjectInputStream inputStream = new ObjectInputStream(_clientSocket.getInputStream());
                 while (true) {
                     //get our data, in this case this would be job ms.
-                    int jobTime = (int) inputStream.readObject();
-                    pm.handlePrompt("jobRecieved",jobTime,null);
+                    Job job = (Job) inputStream.readObject();
+                    pm.handlePrompt("jobReceived",job.getJobTime(),null);
                     //mock procrssing, off the given job time.
-                    Thread.sleep(jobTime);      
+                    Thread.sleep(job.getJobTime());      
                     //after job, break
                     pm.handlePrompt("jobComplete",0,_nodeName);
                     break;
