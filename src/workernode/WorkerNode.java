@@ -20,13 +20,13 @@ public class WorkerNode {
         
         try {
             ServerSocket serverSocket = new ServerSocket(config.getPort());
-            pm.handlePrompt("nodeRunning",config.getPort(), config.getNodeName());
+            pm.handlePrompt("nodeRunning",config.getPort(), config.getNodeName(), null);
             ExecutorService executorService = Executors.newCachedThreadPool();
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 if (_jobCounter >= config.getJobLimit()) {
-                    pm.handlePrompt("maxJobs",0,null);
+                    pm.handlePrompt("maxJobs",0,null, null);
                     clientSocket.close();
                     continue;
                 }
@@ -59,15 +59,15 @@ public class WorkerNode {
                 while (true) {
                     //get our data, in this case this would be job ms.
                     Job job = (Job) inputStream.readObject();
-                    pm.handlePrompt("jobReceived",job.getJobTime(),null);
+                    pm.handlePrompt("jobReceived",job.getJobTime(),job.getJobName(), null);
                     //mock procrssing, off the given job time.
                     Thread.sleep(job.getJobTime());      
                     //after job, break
-                    pm.handlePrompt("jobComplete",0,_nodeName);
+                    pm.handlePrompt("jobComplete",job.getJobTime(), job.getJobName(), _nodeName);
                     break;
                 }
             } catch (IOException | ClassNotFoundException | InterruptedException e) {
-                pm.handlePrompt("jobProccessErr",0,_nodeName);
+                pm.handlePrompt("jobProccessErr",0,_nodeName, null);
             } finally {
                 try {
                     _clientSocket.close();
@@ -84,24 +84,24 @@ public class WorkerNode {
     //helper functions
     private static Config configDataCapture(PromptHandler pm){
          Scanner nodeNameCap = new Scanner(System.in);
-        pm.handlePrompt("name",0,null);
+        pm.handlePrompt("name",0,null, null);
         String activeNodeName = nodeNameCap.nextLine();
         Scanner jobLimitCap = new Scanner(System.in);
-        pm.handlePrompt("limit",0,null);
+        pm.handlePrompt("limit",0,null, null);
         int activeJobLimit = jobLimitCap.nextInt();
         Scanner hostCap = new Scanner(System.in);
-        pm.handlePrompt("host",0,null);
+        pm.handlePrompt("host",0,null, null);
         String activeHost = hostCap.nextLine();
         Scanner portCap = new Scanner(System.in);
-        pm.handlePrompt("port",0,null);
+        pm.handlePrompt("port",0,null, null);
         int activePort = portCap.nextInt();
         return new Config(activePort,activeHost,activeNodeName,activeJobLimit);
     };
     
     private static void errorHandler(IOException e,PromptHandler pm){
-            pm.handlePrompt("generalErr",0,null);
+            pm.handlePrompt("generalErr",0,null, null);
             Scanner myObj = new Scanner(System.in);
-            pm.handlePrompt("pressY",0,null);
+            pm.handlePrompt("pressY",0,null, null);
             String userInput = myObj.nextLine();
             if("y".equals(userInput) ){
                e.printStackTrace(); 
