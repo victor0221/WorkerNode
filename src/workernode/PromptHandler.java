@@ -13,19 +13,19 @@ public class PromptHandler {
         
     }
     
-    public void handlePrompt(String code, int optionalInt, String optionalString){
+    public void handlePrompt(String code, int optionalInt, String optionalString, String optionalString2){
         switch(code){
             case "nodeRunning":
-                System.out.println("Node "+optionalString+" is running ("+optionalInt+")");
+                System.out.println("Node "+optionalString+" is running (port: "+optionalInt+")");
                 break;
             case "maxJobs":
                 System.out.println("MAX JOB LIMIT REACHED!");
                 break;
-            case "jobRecieved":
-                System.out.println("Recieved job ("+optionalInt+")");
+            case "jobReceived":
+                System.out.println("Received " + optionalString + " with duration " + optionalInt + "ms");
                 break;
             case "jobComplete":
-                System.out.println("Job Completed ("+optionalString+")");
+                System.out.println(optionalString + " completed in " + optionalInt + "ms" + "(" + optionalString2 + ")");
                 break;
             case "jobProccessErr":
                 System.out.println("Error processing job on node "+optionalString);
