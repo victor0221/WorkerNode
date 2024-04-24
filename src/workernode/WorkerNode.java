@@ -1,20 +1,33 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package workernode;
-import java.io.BufferedReader;
+
+import workernode.HELPERS.PromptHandler;
+import workernode.CONFIG.Config;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import jobsender.Job;
+import jobsender.JOB_TEMPLATE.Job;
 
+/**
+ *
+ * @author usula
+ */
 public class WorkerNode {
     private static int _jobCounter = 0;
-
-    public static void main(String[] args) {
-        //where the magic happens ;)
+    
+    public WorkerNode(){
+    
+    }
+    
+    public void runWorkerNode(){
+         //where the magic happens ;)
         PromptHandler pm = new PromptHandler();
         Config config = configDataCapture(pm);
         
@@ -79,7 +92,7 @@ public class WorkerNode {
                 _jobCounter--;
             }
         }
-}
+    }
     
     //helper functions
     private static Config configDataCapture(PromptHandler pm){
