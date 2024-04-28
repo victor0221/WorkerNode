@@ -10,12 +10,16 @@ package workernode.CONFIG;
  * @author usula
  */
 public interface IConfig { 
-    public int getPort();
-    public void setPort(int port);
-    public String getHost();
-    public void setHost(String host);
+    public int getNodePort();
+    public void setNodePort(int nodePort);
+    public String getNodeHost();
+    public void setNodeHost(String nodeHost);
     public String getNodeName();
     public void setNodeName(String nodeName);
     public int getJobLimit();
     public void setJobLimit(int jobLimit);
+    public int getLbPort();
+    public void setLbPort(int lbPort);
+    public String getLbHost();
+    public void setLbHost(String lbHost);
 }
