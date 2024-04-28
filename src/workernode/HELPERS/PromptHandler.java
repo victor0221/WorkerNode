@@ -9,14 +9,21 @@ package workernode.HELPERS;
  * @author usula
  */
 public class PromptHandler {
-    public PromptHandler(){
-        
+
+    public PromptHandler() {
+
     }
-    
-    public void handlePrompt(String code, int optionalInt, String optionalString, String optionalString2){
-        switch(code){
+
+    public void handlePrompt(String code, int optionalInt, String optionalString, String optionalString2) {
+        switch (code) {
             case "nodeRunning":
-                System.out.println("Node "+optionalString+" is running (port: "+optionalInt+")");
+                System.out.println("Node " + optionalString + " is running (port: " + optionalInt + ")");
+                break;
+            case "waitingForLb":
+                System.out.println("Waiting for Load Balancer to Start...");
+                break;
+            case "registeredWithLb":
+                System.out.println("Registered with Load Balancer.");
                 break;
             case "maxJobs":
                 System.out.println("MAX JOB LIMIT REACHED!");
@@ -28,7 +35,7 @@ public class PromptHandler {
                 System.out.println(optionalString + " completed in " + optionalInt + "ms" + "(" + optionalString2 + ")");
                 break;
             case "jobProccessErr":
-                System.out.println("Error processing job on node "+optionalString);
+                System.out.println("Error processing " + optionalString + " on node "+ optionalString2);
                 break;
             case "name":
                 System.out.println("Enter your Node name: ");
@@ -41,6 +48,12 @@ public class PromptHandler {
                 break;
             case "port":
                 System.out.println("Enter port number: ");
+                break;
+            case "lbHost":
+                System.out.println("Enter host number that you will use for Load Balancer(e.g. 'localhost'): ");
+                break;
+            case "lbPort":
+                System.out.println("Enter port number that you will use for Load Balancer: ");
                 break;
             case "generalErr":
                 System.out.println("AN ERROR HAS OCCURED!");
