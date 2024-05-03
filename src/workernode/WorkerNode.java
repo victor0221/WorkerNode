@@ -23,6 +23,7 @@ import jobsender.JOB_TEMPLATE.Job;
 public class WorkerNode {
 
     private static int _jobCounter = 0;
+    private static int _jobCapacity = 0;
 
     public WorkerNode() {
 
@@ -32,6 +33,7 @@ public class WorkerNode {
         //where the magic happens ;)
         PromptHandler pm = new PromptHandler();
         Config config = configDataCapture(pm);
+        _jobCapacity = config.getJobLimit();
 
         try {
             ServerSocket serverSocket = new ServerSocket(config.getNodePort());
@@ -50,11 +52,16 @@ public class WorkerNode {
             }
 
             ExecutorService executorService = Executors.newCachedThreadPool();
+            
+//            Sharing capacity with the LB
+            new Thread(() -> shareCapacity(config, pm)).start();
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 if (_jobCounter >= config.getJobLimit()) {
                     pm.handlePrompt("maxJobs", 0, null, null);
+//                   If no capacity, send to job queue
+                    sendToJobQueue(clientSocket, config, pm);
                     clientSocket.close();
                     continue;
                 }
@@ -64,6 +71,7 @@ public class WorkerNode {
                 executorService.submit(workerThread);
                 // Increment active jobs count
                 _jobCounter++;
+                _jobCapacity--;
             }
         } catch (IOException e) {
             errorHandler(e, pm);
@@ -120,8 +128,9 @@ public class WorkerNode {
                     errorHandler(e, pm);
                 }
 
-                //after success we decrement the job counter
+                //after success we decrement the job counter and increment the capacity
                 _jobCounter--;
+                _jobCapacity++;
             }
         }
     }
@@ -151,7 +160,7 @@ public class WorkerNode {
 
     ;
     
-    private static void errorHandler(IOException e, PromptHandler pm) {
+    private static void errorHandler(Exception e, PromptHandler pm) {
         pm.handlePrompt("generalErr", 0, null, null);
         Scanner myObj = new Scanner(System.in);
         pm.handlePrompt("pressY", 0, null, null);
@@ -190,5 +199,62 @@ public class WorkerNode {
     }
 
     ;
+    
+    private void sendToJobQueue(Socket clientSocket, Config config, PromptHandler pm){
+
+        try {
+            ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
+            Job queuedJob = (Job) inputStream.readObject();
+
+            Socket queueSocket = new Socket(config.getLbHost(), config.getLbPort());
+            ObjectOutputStream queueLbOut = new ObjectOutputStream(queueSocket.getOutputStream());
+            queueLbOut.writeUTF("ADD_TO_JOB_QUEUE");
+            queueLbOut.writeObject(queuedJob);
+            queueLbOut.flush();
+            pm.handlePrompt("jobQueued", queuedJob.getJobTime(), queuedJob.getJobName(), null);
+            clientSocket.close();  
+        } catch (IOException | ClassNotFoundException e) {
+            errorHandler(e, pm);
+        }
+    }
+    
+    ;
+    
+    private void shareCapacity(Config config, PromptHandler pm) {
+        
+        while (!Thread.currentThread().isInterrupted()) {
+            if (_jobCapacity >= 1) {
+                Socket capacitySocket = null;
+                try {
+                    capacitySocket = new Socket(config.getLbHost(), config.getLbPort());
+                    ObjectOutputStream capacityLbOut = new ObjectOutputStream(capacitySocket.getOutputStream());
+                    capacityLbOut.writeUTF("NODE_CAPACITY");
+                    capacityLbOut.writeUTF(config.getNodeName());
+                    capacityLbOut.writeUTF(config.getNodeHost());
+                    capacityLbOut.writeInt(config.getNodePort());
+                    capacityLbOut.writeInt(_jobCapacity);
+                    capacityLbOut.flush();
+                } catch (IOException e) {
+                    pm.handlePrompt("capacityCommsErr", 0, e.getMessage(), null);
+                } finally {
+                    try {
+                        if (capacitySocket != null) {
+                            capacitySocket.close();
+                        }
+                    } catch (IOException e) {
+                        pm.handlePrompt("socketCloseErr", 0, e.getMessage(), null);
+                    }
+                }
+                try {
+                    // Do not remove this delay
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();  
+                    pm.handlePrompt("threadErr",0, e.getMessage(), null);
+                    return;
+                }
+            }
+        }
+    }
         
 }

@@ -25,6 +25,12 @@ public class PromptHandler {
             case "registeredWithLb":
                 System.out.println("Registered with Load Balancer.");
                 break;
+            case "capacityCommsErr":
+                System.err.println("Failed to send capacity information: " + optionalString);
+                break;
+            case "threadErr":
+                System.err.println("Thread interrupted: " + optionalString);
+                break;
             case "maxJobs":
                 System.out.println("MAX JOB LIMIT REACHED!");
                 break;
@@ -32,7 +38,10 @@ public class PromptHandler {
                 System.out.println("Received " + optionalString + " with duration " + optionalInt + "ms");
                 break;
             case "jobComplete":
-                System.out.println(optionalString + " completed in " + optionalInt + "ms" + "(" + optionalString2 + ")");
+                System.out.println("Job completed: " + optionalString + " completed in " + optionalInt + "ms" + "(" + optionalString2 + ")");
+                break;
+            case "jobQueued":
+                System.out.println("JOB QUEUED: " + optionalString + " with duration " + optionalInt + "ms sent to Job queue.");
                 break;
             case "jobProccessErr":
                 System.out.println("Error processing " + optionalString + " on node "+ optionalString2);
@@ -60,6 +69,9 @@ public class PromptHandler {
                 break;
             case "pressY":
                 System.out.println("enter 'y' to view stack:");
+                break;
+            case "socketCloseErr":
+                System.err.println("Error closing socket: " + optionalString);
                 break;
         }
     }
