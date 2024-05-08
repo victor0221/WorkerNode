@@ -139,25 +139,38 @@ public class WorkerNode {
     private static Config configDataCapture(PromptHandler pm) {
         Scanner nodeNameCap = new Scanner(System.in);
         pm.handlePrompt("name", 0, null, null);
-        String activeNodeName = nodeNameCap.nextLine();
-        Scanner jobLimitCap = new Scanner(System.in);
-        pm.handlePrompt("limit", 0, null, null);
-        int activeJobLimit = jobLimitCap.nextInt();
+        String activeNodeName = nodeNameCap.nextLine();    
+        int activeJobLimit = captureInt("limit", pm);   
         Scanner hostCap = new Scanner(System.in);
         pm.handlePrompt("host", 0, null, null);
-        String activeHost = hostCap.nextLine();
-        Scanner portCap = new Scanner(System.in);
-        pm.handlePrompt("port", 0, null, null);
-        int activePort = portCap.nextInt();
+        String activeHost = hostCap.nextLine();  
+        int activePort = captureInt("port", pm);  
         Scanner lbHostCap = new Scanner(System.in);
         pm.handlePrompt("lbHost", 0, null, null);
-        String lbHost = lbHostCap.nextLine();
-        Scanner lbPortCap = new Scanner(System.in);
-        pm.handlePrompt("lbPort", 0, null, null);
-        int lbPort = lbPortCap.nextInt();
+        String lbHost = lbHostCap.nextLine(); 
+        int lbPort = captureInt("lbPort", pm);
         return new Config(activePort, activeHost, activeNodeName, activeJobLimit, lbPort, lbHost);
     }
 
+    ;
+    
+    private static int captureInt(String promptCode, PromptHandler pm) {
+        int validInt = 0;
+        boolean validInput = false;
+        while (!validInput) {
+            Scanner scanner = new Scanner(System.in); 
+            pm.handlePrompt(promptCode, 0, null, null);
+            if (scanner.hasNextInt()) {
+                validInt = scanner.nextInt(); 
+                validInput = true; 
+            } else {
+                pm.handlePrompt("invalidInt", 0, null, null);
+                scanner.next(); 
+            }
+        }
+        return validInt;
+    }
+    
     ;
     
     private static void errorHandler(Exception e, PromptHandler pm) {
