@@ -73,6 +73,9 @@ public class PromptHandler {
             case "socketCloseErr":
                 System.err.println("Error closing socket: " + optionalString);
                 break;
+            case "invalidInt":
+                System.out.println("Invalid input. Please enter a valid integer.");
+                break;
         }
     }
 }
