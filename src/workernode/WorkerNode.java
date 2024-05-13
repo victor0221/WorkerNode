@@ -137,17 +137,11 @@ public class WorkerNode {
 
     //helper functions
     private static Config configDataCapture(PromptHandler pm) {
-        Scanner nodeNameCap = new Scanner(System.in);
-        pm.handlePrompt("name", 0, null, null);
-        String activeNodeName = nodeNameCap.nextLine();    
+        String activeNodeName = captureString("name", pm);
         int activeJobLimit = captureInt("limit", pm);   
-        Scanner hostCap = new Scanner(System.in);
-        pm.handlePrompt("host", 0, null, null);
-        String activeHost = hostCap.nextLine();  
+        String activeHost = captureString("host", pm);
         int activePort = captureInt("port", pm);  
-        Scanner lbHostCap = new Scanner(System.in);
-        pm.handlePrompt("lbHost", 0, null, null);
-        String lbHost = lbHostCap.nextLine(); 
+        String lbHost = captureString("lbHost", pm);
         int lbPort = captureInt("lbPort", pm);
         return new Config(activePort, activeHost, activeNodeName, activeJobLimit, lbPort, lbHost);
     }
@@ -172,6 +166,22 @@ public class WorkerNode {
     }
     
     ;
+    
+    private static String captureString(String promptCode, PromptHandler pm) {
+        String validString = "";
+        boolean validInput = false;
+        while (!validInput) {
+            Scanner scanner = new Scanner(System.in);
+            pm.handlePrompt(promptCode, 0, null, null);
+            validString = scanner.nextLine().trim();
+            if (!validString.isEmpty()) {
+                validInput = true;
+            } else {
+                pm.handlePrompt("invalidString", 0, null, null);
+            }
+        }
+        return validString;
+    }
     
     private static void errorHandler(Exception e, PromptHandler pm) {
         pm.handlePrompt("generalErr", 0, null, null);

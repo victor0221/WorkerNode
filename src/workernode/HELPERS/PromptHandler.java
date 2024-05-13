@@ -76,6 +76,9 @@ public class PromptHandler {
             case "invalidInt":
                 System.out.println("Invalid input. Please enter a valid integer.");
                 break;
+            case "invalidString":
+                System.out.println("No input. Please enter something, this cannot be left blank.");
+                break;
         }
     }
 }
