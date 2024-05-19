@@ -53,8 +53,8 @@ public class WorkerNode {
 
             ExecutorService executorService = Executors.newCachedThreadPool();
             
-//            Sharing capacity with the LB
-            new Thread(() -> shareCapacity(config, pm)).start();
+//            Sharing initial capacity with the LB to correct any differences from LB user input
+            shareCapacity(config, pm);
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
@@ -67,11 +67,10 @@ public class WorkerNode {
                 }
 
                 // Start a new worker thread to handle the job
-                WorkerThread workerThread = new WorkerThread(clientSocket, config.getNodeName(), config.getLbHost(), config.getLbPort());
+                WorkerThread workerThread = new WorkerThread(clientSocket, config);
                 executorService.submit(workerThread);
                 // Increment active jobs count
                 _jobCounter++;
-                _jobCapacity--;
             }
         } catch (IOException e) {
             errorHandler(e, pm);
@@ -82,15 +81,19 @@ public class WorkerNode {
 
         private Socket _clientSocket;
         private String _nodeName;
+        private String _nodeHost;
+        private int _nodePort;
         private String failedJob;
         private String _lbHost;
         private int _lbPort;
 
-        public WorkerThread(Socket clientSocket, String nodeName, String lbHost, int lbPort) {
+        public WorkerThread(Socket clientSocket, Config config) {
             _clientSocket = clientSocket;
-            _nodeName = nodeName;
-            _lbHost = lbHost;
-            _lbPort = lbPort;
+            _nodeName = config.getNodeName();
+            _nodeHost = config.getNodeHost();
+            _nodePort = config.getNodePort();
+            _lbHost = config.getLbHost();
+            _lbPort = config.getLbPort();
         }
 
         @Override
@@ -112,6 +115,9 @@ public class WorkerNode {
                     lbOut.writeUTF("JOB_COMPLETION");
 
                     String completionMessage = "Job Completed: " + job.getJobName() + " completed by " + _nodeName + " in " + job.getJobTime() + "ms";
+                    lbOut.writeUTF(_nodeName);
+                    lbOut.writeUTF(_nodeHost);
+                    lbOut.writeInt(_nodePort);
                     lbOut.writeUTF(completionMessage);
                     lbOut.flush();
                     
@@ -128,9 +134,8 @@ public class WorkerNode {
                     errorHandler(e, pm);
                 }
 
-                //after success we decrement the job counter and increment the capacity
+                //after success we decrement the job counter
                 _jobCounter--;
-                _jobCapacity++;
             }
         }
     }
@@ -244,40 +249,28 @@ public class WorkerNode {
     ;
     
     private void shareCapacity(Config config, PromptHandler pm) {
-        
-        while (!Thread.currentThread().isInterrupted()) {
-            if (_jobCapacity >= 1) {
-                Socket capacitySocket = null;
-                try {
-                    capacitySocket = new Socket(config.getLbHost(), config.getLbPort());
-                    ObjectOutputStream capacityLbOut = new ObjectOutputStream(capacitySocket.getOutputStream());
-                    capacityLbOut.writeUTF("NODE_CAPACITY");
-                    capacityLbOut.writeUTF(config.getNodeName());
-                    capacityLbOut.writeUTF(config.getNodeHost());
-                    capacityLbOut.writeInt(config.getNodePort());
-                    capacityLbOut.writeInt(_jobCapacity);
-                    capacityLbOut.flush();
-                } catch (IOException e) {
-                    pm.handlePrompt("capacityCommsErr", 0, e.getMessage(), null);
-                } finally {
-                    try {
-                        if (capacitySocket != null) {
-                            capacitySocket.close();
-                        }
-                    } catch (IOException e) {
-                        pm.handlePrompt("socketCloseErr", 0, e.getMessage(), null);
-                    }
+
+        Socket capacitySocket = null;
+        try {
+            capacitySocket = new Socket(config.getLbHost(), config.getLbPort());
+            ObjectOutputStream capacityLbOut = new ObjectOutputStream(capacitySocket.getOutputStream());
+            capacityLbOut.writeUTF("NODE_CAPACITY");
+            capacityLbOut.writeUTF(config.getNodeName());
+            capacityLbOut.writeUTF(config.getNodeHost());
+            capacityLbOut.writeInt(config.getNodePort());
+            capacityLbOut.writeInt(_jobCapacity);
+            capacityLbOut.flush();
+        } catch (IOException e) {
+            pm.handlePrompt("capacityCommsErr", 0, e.getMessage(), null);
+        } finally {
+            try {
+                if (capacitySocket != null) {
+                    capacitySocket.close();
                 }
-                try {
-                    // Do not remove this delay
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();  
-                    pm.handlePrompt("threadErr",0, e.getMessage(), null);
-                    return;
-                }
+            } catch (IOException e) {
+                pm.handlePrompt("socketCloseErr", 0, e.getMessage(), null);
             }
         }
     }
-        
+    
 }
